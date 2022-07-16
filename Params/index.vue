@@ -128,8 +128,8 @@
               </template>
             </el-table-column>
           </el-table>
-          <!-- <el-dialog title="添加动态参数" :visible.sync="dialogFormVisible">
-            <el-form :model="form" :rules="rules" label-width="80px">
+          <el-dialog title="添加动态参数" :visible.sync="dialogFormVisible">
+            <el-form :model="form" label-width="80px">
               <el-form-item label="动态参数">
                 <el-input v-model="form.name"></el-input>
               </el-form-item>
@@ -140,9 +140,125 @@
                 >确 定</el-button
               >
             </div>
-          </el-dialog> -->
+          </el-dialog>
         </el-tab-pane>
-        <el-tab-pane label="静态属性" name="only">配置管理</el-tab-pane>
+        <el-tab-pane label="静态属性" name="only">
+          <el-button
+            type="primary"
+            @click="dialogFormVisible = true"
+            :disabled="!flag"
+            >添加属性</el-button
+          >
+          <el-table
+            :data="paramsData"
+            border
+            stripe
+            max-height="400"
+            style="width: 100%"
+          >
+            <el-table-column type="expand">
+              <template slot-scope="props">
+                <el-form label-position="left" inline class="demo-table-expand">
+                  <el-form-item label="商品名称">
+                    <span>{{ props.row.name }}</span>
+                    <el-tag
+                      :key="tag"
+                      v-for="tag in dynamicTags"
+                      closable
+                      :disable-transitions="false"
+                      @close="handleClose(tag)"
+                    >
+                      {{ tag }}
+                    </el-tag>
+                    <el-input
+                      class="input-new-tag"
+                      v-if="inputVisible"
+                      v-model="inputValue"
+                      ref="saveTagInput"
+                      size="small"
+                      @keyup.enter.native="handleInputConfirm"
+                      @blur="handleInputConfirm"
+                    >
+                    </el-input>
+                    <el-button
+                      v-else
+                      class="button-new-tag"
+                      size="small"
+                      @click="showInput"
+                      >+ New Tag</el-button
+                    >
+                  </el-form-item>
+                </el-form>
+              </template>
+            </el-table-column>
+            <el-table-column type="index" :index="1" label="#">
+            </el-table-column>
+            <el-table-column label="分类名称" prop="attr_name">
+            </el-table-column>
+            <el-table-column label="操作" prop="">
+              <template slot-scope="scope">
+                <div class="btn">
+                  <el-button
+                    type="primary"
+                    icon="el-icon-edit"
+                    @click="changeEdit(scope.row)"
+                  ></el-button>
+
+                  <el-button
+                    type="danger"
+                    icon="el-icon-delete"
+                    @click="deleteEdit(scope.row)"
+                  ></el-button>
+                </div>
+                <!-- 编辑按钮 -->
+                <el-dialog title="编辑用户" :visible.sync="changeParamsDialog">
+                  <el-form :model="changeParamsForm" label-width="80px">
+                    <el-form-item label="用户名称">
+                      <el-input v-model="changeParamsForm.name"></el-input>
+                    </el-form-item>
+                  </el-form>
+                  <div slot="footer" class="dialog-footer">
+                    <el-button @click="changeParamsDialog = false">
+                      取 消
+                    </el-button>
+                    <el-button type="primary" @click="changeParamsFormFn">
+                      确 定
+                    </el-button>
+                  </div>
+                </el-dialog>
+                <!-- 编辑按钮 -->
+
+                <!-- 删除按钮 -->
+                <el-dialog title="提示" :visible.sync="deleteParamsDialog">
+                  <p>
+                    <i class="el-icon-warning"></i
+                    ><span>此操作将永久删除该属性，是否继续?</span>
+                  </p>
+                  <div slot="footer">
+                    <el-button @click="deleteStop"> cancel </el-button>
+                    <el-button type="primary" @click="deleteParamsFormFn">
+                      ok
+                    </el-button>
+                  </div>
+                </el-dialog>
+                <!-- 删除按钮 -->
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-dialog title="添加动态参数" :visible.sync="dialogFormVisible">
+            <el-form :model="form" label-width="80px">
+              <el-form-item label="动态参数">
+                <el-input v-model="form.name"></el-input>
+              </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+              <el-button @click="dialogFormVisible = false">取 消</el-button>
+              <el-button type="primary" @click="dialogFormVisible = false"
+                >确 定</el-button
+              >
+            </div>
+          </el-dialog>
+       </el-tab-pane>
       </el-tabs>
     </div>
   </div>
@@ -219,19 +335,22 @@ export default {
       }
     },
     changeEdit (row) {
-      console.log(row)
       this.changeParamsForm.id = row.cat_id
       this.changeParamsForm.attrId = row.attr_id
       this.changeParamsForm.name = row.attr_name
       this.changeParamsForm.sel = row.attr_sel
-
-      this.changeParamsDialog = false
+      this.changeParamsDialog = true
     },
     async changeParamsFormFn () {
       try {
         console.log(this.changeParamsForm)
-        const res = await ParamsChange(this.changeParamsForm)
-        console.log(res)
+        await ParamsChange(this.changeParamsForm)
+        this.$message({
+          message: '更新成功',
+          type: 'success'
+        })
+        this.handleClick()
+        this.changeParamsDialog = false
       } catch (err) {
         console.log(err)
       }
@@ -249,8 +368,8 @@ export default {
     async deleteParamsFormFn () {
       try {
         console.log(this.deleteList)
-        const res = await ParamsDelete(this.deleteList)
-        console.log(res)
+        await ParamsDelete(this.deleteList)
+
         this.$message({
           message: '删除成功',
           type: 'success'
