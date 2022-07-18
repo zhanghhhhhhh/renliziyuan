@@ -32,7 +32,13 @@
       </el-dialog>
 
       <div class="center">
-        <el-table :data="cateArr.result" border stripe style="width: 100%">
+        <el-table
+          :data="cateArr.result"
+          row-key="cat_id"
+          border
+          stripe
+          style="width: 100%"
+        >
           <el-table-column type="index" :index="1" label="#"> </el-table-column>
           <el-table-column prop="cat_name" label="分类名称"> </el-table-column>
           <el-table-column prop="cat_deleted" label="是否有效" width="100">

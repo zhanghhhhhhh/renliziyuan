@@ -11,7 +11,7 @@
       <el-table :data="rolesData" style="width: 100%" stripe border>
         <el-table-column type="expand" label="#" width="50">
           <template slot-scope="props">
-            {{ props }}
+            {{ props.row }}
           </template>
         </el-table-column>
         <el-table-column type="index" label="#" width="50"> </el-table-column>
@@ -37,12 +37,42 @@
                 删除</el-button
               >
 
-              <el-button
-                type="warning"
-                icon="el-icon-setting"
-                @click="setEdit(scope.row)"
+              <el-dialog title="提示" :visible.sync="deleteUserDialog">
+                <p>
+                  <i class="el-icon-warning"></i
+                  ><span>此操作将永久删除，是否继续?</span>
+                </p>
+                <div slot="footer">
+                  <el-button @click="deleteStop"> cancel </el-button>
+                  <el-button type="primary" @click="deleteUserFormFn">
+                    ok
+                  </el-button>
+                </div>
+              </el-dialog>
+
+              <el-button type="warning" icon="el-icon-setting" @click="onSubmit"
                 >分配权限</el-button
               >
+              <el-dialog title="收货地址" :visible.sync="dialogFormVisible">
+                <el-tree
+                  :data="data1"
+                  show-checkbox
+                  :node-key="data1.id"
+                  :props="defaultProps"
+                  default-expand-all
+                  :default-checked-keys="[146]"
+                >
+                </el-tree>
+
+                <div slot="footer">
+                  <el-button @click="dialogFormVisible = false"
+                    >取 消</el-button
+                  >
+                  <el-button type="primary" @click="dialogFormVisible = false"
+                    >确 定</el-button
+                  >
+                </div>
+              </el-dialog>
             </div>
           </template>
         </el-table-column>
@@ -52,22 +82,30 @@
 </template>
 
 <script>
-import { getRolesList } from '@/api/roles'
+import { getRolesList, deleteUserFormFn } from '@/api/roles'
+import { getRightsList } from '@/api/rights'
+
 export default {
   created () {
     this.getRolesList()
   },
   data () {
     return {
-      rolesData: []
-
+      rolesData: [],
+      deleteId: 0,
+      deleteUserDialog: false,
+      dialogFormVisible: false, // 分配弹出
+      data1: [],
+      defaultProps: {
+        children: 'children',
+        label: 'authName'
+      }
     }
   },
   methods: {
     async getRolesList () {
       try {
         const res = await getRolesList()
-        console.log(res)
         this.rolesData = res.data.data
       } catch (err) {
         console.log(err)
@@ -76,11 +114,33 @@ export default {
     changeEdit (row) {
       console.log(row)
     },
+    deleteStop () {
+      this.deleteCatDialog = false
+      this.$message('已取消删除')
+    },
     deleteEdit (row) {
       console.log(row)
+      this.deleteId = row.id
+      this.deleteUserDialog = true
     },
-    setEdit (row) {
-      console.log(row)
+    async deleteUserFormFn () {
+      try {
+        await deleteUserFormFn({ id: this.deleteId })
+        this.$message({
+          message: '删除成功',
+          type: 'success'
+        })
+        this.getRolesList()
+        this.deleteCatDialog = false
+      } catch (err) {
+        console.log(err)
+      }
+    },
+    async onSubmit () {
+      this.dialogFormVisible = true
+      const res = await getRightsList({ type: 'tree' })
+      console.log(res)
+      this.data1 = res.data.data
     }
   },
   computed: {},

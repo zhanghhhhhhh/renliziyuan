@@ -116,7 +116,7 @@ export default {
   }
   .el-aside {
     background-color: #33445c;
-    height: 100%;
+    height: 100vh;
   }
   .el-main {
     background-color: #eaedf1;

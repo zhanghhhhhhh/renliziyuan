@@ -93,6 +93,7 @@ export default {
         pagesize: 10
       },
       selectSize: 10,
+      city: '',
       cityOptions: cityOptions
     }
   },
@@ -117,6 +118,9 @@ export default {
       // console.log(row)
       this.changeOrderDialog = true
     }, // 要修改数据的数据
+    changeProvince (row) {
+
+    },
     changeOrderFormFn () {
 
     }, // 发起修改的请求

@@ -44,7 +44,7 @@ export default {
   methods: {
     async getRightsList () {
       try {
-        const res = await getRightsList()
+        const res = await getRightsList({ type: 'list' })
         this.rightsData = res.data.data
 
         this.rightsNewData = this.rightsData
